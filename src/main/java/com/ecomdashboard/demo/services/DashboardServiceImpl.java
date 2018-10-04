@@ -1,6 +1,10 @@
 package com.ecomdashboard.demo.services;
 
+import java.text.NumberFormat;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -38,8 +42,36 @@ public class DashboardServiceImpl implements DashboardService{
 	
 	
 	@Override
-	public List<CompanyRevenue> getTodayRevenueDash() {
-		return companyRevenueRepository.findAll();
+	public HashMap<String, Object> getTodayRevenueDash() {
+		
+		HashMap<String, Object> populateCmpnyRev = new HashMap<String, Object>();
+		
+		List<CompanyRevenue> companyRevenueList = companyRevenueRepository.findAll();
+		
+		List<String> label = new ArrayList<>();
+		List<String> _revenue = new ArrayList<>();
+		double totalMargin = 0;
+		double totalExpense = 0;
+		double totalRevenue =0;
+		
+		Locale locale = new Locale("en", "US");
+		NumberFormat currencyFormatter = NumberFormat.getCurrencyInstance(locale);
+		
+		for(CompanyRevenue companyRevenue: companyRevenueList) {
+			label.add(companyRevenue.get_month());
+			_revenue.add(String.valueOf(companyRevenue.getRevenue()));
+			totalExpense = totalExpense + companyRevenue.getExpense();
+			totalMargin = totalMargin + companyRevenue.getMargins();
+			totalRevenue = totalRevenue + companyRevenue.getRevenue();
+		}
+		
+		populateCmpnyRev.put("crLabels", label.toString());
+		populateCmpnyRev.put("crRevenue", _revenue.toString() );
+		populateCmpnyRev.put("totalExpense", currencyFormatter.format(totalExpense));
+		populateCmpnyRev.put("totalMargin",  currencyFormatter.format(totalMargin));
+		populateCmpnyRev.put("totalRevenue",  currencyFormatter.format(totalRevenue));
+		
+		return populateCmpnyRev;
 	}
 
 	@Override
